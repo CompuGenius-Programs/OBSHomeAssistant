@@ -1,0 +1,10 @@
+{
+  "domain": "obs_control",
+  "name": "OBS Control",
+  "version": "1.0.0",
+  "documentation": "https://www.cgprograms.com",
+  "requirements": ["obsws-python", "python-dotenv"],
+  "dependencies": [],
+  "codeowners": ["@compugenius-programs"],
+  "config_flow": true
+}
