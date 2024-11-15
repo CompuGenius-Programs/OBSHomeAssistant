@@ -9,7 +9,15 @@ DOMAIN = "obs_control"
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities):
     """Set up OBS Control switches."""
     data = hass.data[DOMAIN][config_entry.entry_id]
-    async_add_entities([OBSControlSwitch(data["host"], data["port"], data["password"])])
+    switch = OBSControlSwitch(data["host"], data["port"], data["password"])
+    async_add_entities([switch])
+
+    # Register a service to call process_filename
+    async def handle_process_filename(call):
+        filename = call.data.get("filename")
+        await switch.process_filename(filename)
+
+    hass.services.async_register(DOMAIN, "process_filename", handle_process_filename)
 
 
 class OBSControlSwitch(SwitchEntity):
@@ -57,3 +65,7 @@ class OBSControlSwitch(SwitchEntity):
                 client.start_stream() if start else client.stop_stream()
         except Exception as e:
             self._is_on = await self._is_streaming()
+
+    async def process_filename(self, filename):
+        with ReqClient(host=self._host, port=self._port, password=self._password) as client:
+            client.send("SetInputSettings", {"inputName": "Filename", "inputSettings": {"text": filename}})
